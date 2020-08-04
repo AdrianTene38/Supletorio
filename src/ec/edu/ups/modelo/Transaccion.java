@@ -6,7 +6,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.NamedQuery;
 
+@NamedQuery(name = "getTransacciones", query = "SELECT t FROM Transaccion t WHERE t.cuenta.codigo = :codigo ORDER BY t.fecha DESC")
 @Entity
 public class Transaccion implements Serializable {
 
