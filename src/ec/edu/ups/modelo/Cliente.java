@@ -33,6 +33,7 @@ public class Cliente implements Serializable {
 		this.apellido = apellido;
 	}
 
+	
 	@Id
 	private String cedula;
 	private String nombre;
@@ -86,6 +87,7 @@ public class Cliente implements Serializable {
 			return false;
 		return true;
 	}
+	
 	public Cliente(String cedula, String nombre, String apellido) {
 		super();
 		this.cedula = cedula;

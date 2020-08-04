@@ -25,40 +25,72 @@ import ec.edu.ups.modelo.Transaccion;
 public class ClienteResource {
 	@EJB 
 	private ClienteFacade ejbClienteFacade;
+	
+	@EJB 
+	private CuentaBancariaFacade ejbCuentaFacade;
+
 	@EJB 
 	private TransaccionFacade ejbTransaccionFacade;
-	@EJB 
-	private CuentaBancariaFacade ejbCuentaBancariaFacade;
-
 
 	@GET
-	@Path("/list/{id}")
+	@Path("/list/{cuenta}/{monto}/{fecha}/{hora}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response listPersons(@PathParam("id") String cedula) {
+	public Response listPersons(@PathParam("cuenta") int cuenta, @PathParam("monto") double monto, @PathParam("fecha") String fecha, @PathParam("hora") String hora) {
 		Jsonb jsonb = JsonbBuilder.create();
-		Cliente cliente = null;
-		cliente = ejbClienteFacade.find(cedula);
-		// para evitar el error del CORS se agregan los headers
-		return Response.ok(jsonb.toJson(cliente))
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE").build();
-	}	
+		
 
+		CuentaBancaria cuentaF = null;
+		cuentaF = ejbCuentaFacade.find(cuenta);
+		Transaccion t = new Transaccion();
+		t.setCuenta(cuentaF);
+		t.setMonto(monto);
+		t.setFecha(fecha);
+		t.setHora(hora);
+		cuentaF.setMonto(cuentaF.getMonto() - monto);
+		ejbCuentaFacade.edit(cuentaF);
+		ejbTransaccionFacade.create(t);
+		// para evitar el error del CORS se agregan los headers
+		return Response.ok(jsonb.toJson(t)).build();
+	}	
+//	@POST
+//	@Path("/post")
+//	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+//	@Produces(MediaType.APPLICATION_JSON)
+//	public Response post(@FormParam("cedula") String cedula, @FormParam("nombre") String nombre, @FormParam("apellido") String apellido) throws Exception{
+//		Cliente p =new Cliente();
+//		p.setCedula(cedula);
+//		p.setNombre(nombre);
+//		p.setApellido(apellido);
+//		ejbClienteFacade.create(p);
+//		return Response.ok("Parece q si mijito")
+//				.header("Access-Control-Allow-Origin", "*")
+//				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+//				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE").build();
+//	}	 
+	
 	@POST
 	@Path("/post")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response post(@FormParam("cedula") String cedula, @FormParam("nombre") String nombre, @FormParam("apellido") String apellido) throws Exception{
-		Cliente p =new Cliente();
-		p.setCedula(cedula);
-		p.setNombre(nombre);
-		p.setApellido(apellido);
-		ejbClienteFacade.create(p);
+	public Response post(@FormParam("monto") double monto, @FormParam("fecha") String fecha, @FormParam("hora") String hora,@FormParam("cuenta") int cuenta) throws Exception{
+		
+		CuentaBancaria cuentaF = null;
+		cuentaF = ejbCuentaFacade.find(cuenta);
+		Transaccion t = new Transaccion();
+		t.setCuenta(cuentaF);
+		t.setMonto(monto);
+		t.setFecha(fecha);
+		t.setHora(hora);
+		cuentaF.setMonto(cuentaF.getMonto() + monto);
+		ejbCuentaFacade.edit(cuentaF);
+		ejbTransaccionFacade.create(t);
+		
+		
+
 		return Response.ok("Parece q si mijito")
 				.header("Access-Control-Allow-Origin", "*")
 				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
 				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE").build();
-	}	 
-
+	}	
+	
 }
